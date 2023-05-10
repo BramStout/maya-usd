@@ -32,8 +32,7 @@ UsdUndoCreateStageWithNewLayerCommand::UsdUndoCreateStageWithNewLayerCommand(
     , _insertedChild(nullptr)
     , _createTransformDagMod(MDagModifierUndoItem::create("Create transform"))
     , _createProxyShapeDagMod(MDagModifierUndoItem::create("Create Stage with new Layer"))
-    , _createTransformSuccess(false)
-    , _createProxyShapeSuccess(false)
+    , _success(false)
 {
     if (!TF_VERIFY(parentItem))
         return;
@@ -60,7 +59,6 @@ Ufe::SceneItem::Ptr UsdUndoCreateStageWithNewLayerCommand::sceneItem() const
 void UsdUndoCreateStageWithNewLayerCommand::execute()
 {
     if (!_parentItem) {
-        markAsFailed();
         return;
     }
 
@@ -72,7 +70,6 @@ void UsdUndoCreateStageWithNewLayerCommand::execute()
     MDagPath parentDagPath = MayaUsd::ufe::ufeToDagPath(_parentItem->path());
     MObject  parentObject = parentDagPath.transform(&status);
     if (status != MStatus::kInvalidParameter && MFAIL(status)) {
-        markAsFailed();
         return;
     }
 
@@ -85,22 +82,19 @@ void UsdUndoCreateStageWithNewLayerCommand::execute()
     MObject transformObj;
     transformObj = _createTransformDagMod.createNode("transform", parentObject, &status);
     if (MFAIL(status)) {
-        markAsFailed();
         return;
     }
     TF_VERIFY(!transformObj.isNull());
     status = _createTransformDagMod.doIt();
     if (MFAIL(status)) {
-        markAsFailed();
         return;
     }
-    _createTransformSuccess = true;
 
     // Create a proxy shape.
     MObject proxyShape;
     proxyShape = _createProxyShapeDagMod.createNode("mayaUsdProxyShape", transformObj, &status);
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
     TF_VERIFY(!proxyShape.isNull());
@@ -113,17 +107,17 @@ void UsdUndoCreateStageWithNewLayerCommand::execute()
     // according to the suffix of the transform, because they now share the common prefix "stage".
     status = _createProxyShapeDagMod.renameNode(proxyShape, "stageShape1");
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
     status = _createProxyShapeDagMod.renameNode(transformObj, "stage1");
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
     status = _createProxyShapeDagMod.renameNode(transformObj, "stage1");
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
 
@@ -133,34 +127,34 @@ void UsdUndoCreateStageWithNewLayerCommand::execute()
     MObject time1;
     status = selection.getDependNode(0, time1);
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
     MFnDependencyNode time1DepNodeFn(time1, &status);
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
     MObject time1OutTimeAttr = time1DepNodeFn.attribute("outTime", &status);
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
 
     // Get the `time` attribute of the newly created mayaUsdProxyShape.
     MDagPath proxyShapeDagPath = MDagPath::getAPathTo(proxyShape, &status);
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
     MFnDependencyNode proxyShapeDepNodeFn(proxyShapeDagPath.node(), &status);
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
     MObject proxyShapeTimeAttr = proxyShapeDepNodeFn.attribute("time", &status);
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
 
@@ -168,17 +162,17 @@ void UsdUndoCreateStageWithNewLayerCommand::execute()
     status
         = _createProxyShapeDagMod.connect(time1, time1OutTimeAttr, proxyShape, proxyShapeTimeAttr);
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
 
     // Execute the operations.
     status = _createProxyShapeDagMod.doIt();
     if (MFAIL(status)) {
-        markAsFailed();
+        _createTransformDagMod.undoIt();
         return;
     }
-    _createProxyShapeSuccess = true;
+    _success = true;
 
     // Create a UFE scene item for the newly created mayaUsdProxyShape.
     Ufe::Path proxyShapeUfePath = MayaUsd::ufe::dagPathToUfe(proxyShapeDagPath);
@@ -188,14 +182,14 @@ void UsdUndoCreateStageWithNewLayerCommand::execute()
     // When creating the proxy shape, the stage map gets dirtied and cleaned. Afterwards, the proxy
     // shape is renamed. The stage map does not observe the Maya data model, so renaming does not
     // dirty the stage map again. Thus, the cache is in an invalid state, where it contains the
-    // path of the proxy shape before it was renamed. Calling getProxyShape() refreshes the cache. 
+    // path of the proxy shape before it was renamed. Calling getProxyShape() refreshes the cache.
     // See comments within UsdStageMap::proxyShape() for more details.
     getProxyShape(proxyShapeUfePath);
 }
 
 void UsdUndoCreateStageWithNewLayerCommand::undo()
 {
-    if (_createProxyShapeSuccess) {
+    if (_success) {
         _createProxyShapeDagMod.undoIt();
         _createTransformDagMod.undoIt();
     }
@@ -203,7 +197,7 @@ void UsdUndoCreateStageWithNewLayerCommand::undo()
 
 void UsdUndoCreateStageWithNewLayerCommand::redo()
 {
-    if (_createProxyShapeSuccess) {
+    if (_success) {
         _createTransformDagMod.doIt();
         _createProxyShapeDagMod.doIt();
 
@@ -211,17 +205,6 @@ void UsdUndoCreateStageWithNewLayerCommand::redo()
         if (_insertedChild) {
             getProxyShape(_insertedChild->path());
         }
-    }
-}
-
-void UsdUndoCreateStageWithNewLayerCommand::markAsFailed()
-{
-    if (_createProxyShapeSuccess) {
-        _createProxyShapeDagMod.undoIt();
-    }
-
-    if (_createTransformSuccess) {
-        _createTransformDagMod.undoIt();
     }
 }
 

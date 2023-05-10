@@ -60,15 +60,12 @@ public:
     void redo() override;
 
 private:
-    void markAsFailed();
-
     Ufe::SceneItem::Ptr _parentItem;
     Ufe::SceneItem::Ptr _insertedChild;
 
     MDagModifier& _createTransformDagMod;
     MDagModifier& _createProxyShapeDagMod;
-    bool          _createTransformSuccess;
-    bool          _createProxyShapeSuccess;
+    bool          _success;
 }; // UsdUndoCreateStageWithNewLayerCommand
 
 } // namespace ufe
