@@ -13,7 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-#pragma once
+#ifndef MAYAUSD_UFE_CREATESTAGEWITHNEWLAYERCOMMAND_H
+#define MAYAUSD_UFE_CREATESTAGEWITHNEWLAYERCOMMAND_H
 
 #include <mayaUsd/base/api.h>
 
@@ -59,6 +60,8 @@ public:
     void redo() override;
 
 private:
+    void markAsFailed();
+
     Ufe::SceneItem::Ptr _parentItem;
     Ufe::SceneItem::Ptr _insertedChild;
 
@@ -70,3 +73,5 @@ private:
 
 } // namespace ufe
 } // namespace MAYAUSD_NS_DEF
+
+#endif // MAYAUSD_UFE_CREATESTAGEWITHNEWLAYERCOMMAND_H
