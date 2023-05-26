@@ -886,8 +886,6 @@ MStatus UsdMayaMeshReadUtils::assignSubDivTagsToMesh(
     return MS::kSuccess;
 }
 
-#if MAYA_API_VERSION >= 20220000
-
 MStatus
 UsdMayaMeshReadUtils::getComponentTags(const UsdGeomMesh& mesh, std::vector<ComponentTagData>& tags)
 {
@@ -971,7 +969,5 @@ MStatus UsdMayaMeshReadUtils::createComponentTags(const UsdGeomMesh& mesh, const
 
     return status;
 }
-
-#endif
 
 PXR_NAMESPACE_CLOSE_SCOPE

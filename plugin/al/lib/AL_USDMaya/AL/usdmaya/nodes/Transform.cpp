@@ -31,14 +31,7 @@
 #include <maya/MTime.h>
 
 namespace {
-const int _transformProfilerCategory = MProfiler::addCategory(
-#if MAYA_API_VERSION >= 20190000
-    "Transform",
-    "Transform"
-#else
-    "Transform"
-#endif
-);
+const int _transformProfilerCategory = MProfiler::addCategory("Transform", "Transform");
 } // namespace
 
 namespace {

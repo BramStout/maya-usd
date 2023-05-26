@@ -177,8 +177,6 @@ std::string _GetResourcePath(const std::string& resource)
     return path;
 }
 
-#if MAYA_API_VERSION >= 20210000
-
 //! Structure for Automatic shader stage input parameter to register in VP2.
 struct AutomaticShaderStageInput
 {
@@ -221,8 +219,6 @@ std::vector<AutomaticShaderStageInput> _automaticShaderStageInputs
 std::vector<std::pair<MString, MString>> _domainShaderInputNameMappings
     = { { "BasisCurvesCubicColor", "BasisCurvesCubicColorDomain" },
         { "BasisCurvesLinearColor", "BasisCurvesLinearColorDomain" } };
-
-#endif
 
 } // anonymous namespace
 
@@ -535,8 +531,6 @@ MStatus HdVP2ShaderFragments::registerFragments()
             LINREC709_TO_SCENE_LINREC709_REC_2020);
     }
 
-#if MAYA_API_VERSION >= 20210000
-
     // Register automatic shader stage input parameters.
     for (const auto& input : _automaticShaderStageInputs) {
         fragmentManager->addAutomaticShaderStageInput(
@@ -551,8 +545,6 @@ MStatus HdVP2ShaderFragments::registerFragments()
     for (const auto& mapping : _domainShaderInputNameMappings) {
         fragmentManager->addDomainShaderInputNameMapping(mapping.first, mapping.second);
     }
-
-#endif
 
     _registrationCount++;
 
@@ -582,8 +574,6 @@ MStatus HdVP2ShaderFragments::deregisterFragments()
         return MS::kFailure;
     }
 
-#if MAYA_API_VERSION >= 20210000
-
     // De-register a desired domain shader fragment for each input parameter.
     for (const auto& mapping : _domainShaderInputNameMappings) {
         fragmentManager->removeDomainShaderInputNameMapping(mapping.first);
@@ -593,8 +583,6 @@ MStatus HdVP2ShaderFragments::deregisterFragments()
     for (const auto& input : _automaticShaderStageInputs) {
         fragmentManager->removeAutomaticShaderStageInput(input._shaderStage, input._parameterName);
     }
-
-#endif
 
     // De-register the various UsdUVTexture fragments:
     for (const auto& txtFrag : _textureFragNames) {

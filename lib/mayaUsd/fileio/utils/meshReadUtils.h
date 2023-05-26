@@ -77,8 +77,6 @@ void assignInvisibleFaces(const UsdGeomMesh& mesh, const MObject& meshObj);
 MAYAUSD_CORE_PUBLIC
 MStatus assignSubDivTagsToMesh(const UsdGeomMesh&, MObject&, MFnMesh&);
 
-#if MAYA_API_VERSION >= 20220000
-
 MAYAUSD_CORE_PUBLIC
 MStatus createComponentTags(const UsdGeomMesh& mesh, const MObject& meshObj);
 
@@ -87,8 +85,6 @@ using ComponentTagData = std::pair<MString, MObject>;
 
 MAYAUSD_CORE_PUBLIC
 MStatus getComponentTags(const UsdGeomMesh& mesh, std::vector<ComponentTagData>& tags);
-
-#endif
 
 } // namespace UsdMayaMeshReadUtils
 
