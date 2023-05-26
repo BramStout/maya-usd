@@ -88,8 +88,8 @@ endif()
 
 if(IS_MACOSX)
     # On OSX, setting MAYA_LOCATION to either the base installation dir (ie,
-    # `/Application/Autodesk/maya20xx`), or the Contents folder in the Maya.app dir
-    # (ie, `/Application/Autodesk/maya20xx/Maya.app/Contents`) are supported.
+    # `/Application/Autodesk/maya202x`), or the Contents folder in the Maya.app dir
+    # (ie, `/Application/Autodesk/maya202x/Maya.app/Contents`) are supported.
     find_path(MAYA_BASE_DIR
             include/maya/MFn.h
         HINTS
@@ -97,12 +97,6 @@ if(IS_MACOSX)
             "$ENV{MAYA_LOCATION}/../.."
             "${MAYA_LOCATION}"
             "$ENV{MAYA_LOCATION}"
-            "/Applications/Autodesk/maya2020"
-            "/Applications/Autodesk/maya2019"
-            "/Applications/Autodesk/maya2018"
-            "/Applications/Autodesk/maya2017"
-            "/Applications/Autodesk/maya2016.5"
-            "/Applications/Autodesk/maya2016"
         DOC
             "Maya installation root directory"
     )
@@ -124,12 +118,6 @@ elseif(IS_LINUX)
         HINTS
             "${MAYA_LOCATION}"
             "$ENV{MAYA_LOCATION}"
-            "/usr/autodesk/maya2020-x64"
-            "/usr/autodesk/maya2019-x64"
-            "/usr/autodesk/maya2018-x64"
-            "/usr/autodesk/maya2017-x64"
-            "/usr/autodesk/maya2016.5-x64"
-            "/usr/autodesk/maya2016-x64"
         DOC
             "Maya installation root directory"
     )
@@ -150,12 +138,6 @@ elseif(IS_WINDOWS)
         HINTS
             "${MAYA_LOCATION}"
             "$ENV{MAYA_LOCATION}"
-            "C:/Program Files/Autodesk/Maya2020"
-            "C:/Program Files/Autodesk/Maya2019"
-            "C:/Program Files/Autodesk/Maya2018"
-            "C:/Program Files/Autodesk/Maya2017"
-            "C:/Program Files/Autodesk/Maya2016.5"
-            "C:/Program Files/Autodesk/Maya2016"
         DOC
             "Maya installation root directory"
     )
@@ -289,10 +271,8 @@ endif()
 
 # Determine the Python version and switch between mayapy and mayapy2.
 set(MAYAPY_EXE mayapy)
-set(MAYA_PY_VERSION 2)
-if(${MAYA_APP_VERSION} STRGREATER_EQUAL "2021")
-    set(MAYA_PY_VERSION 3)
-
+set(MAYA_PY_VERSION 3)
+if(MAYA_APP_VERSION VERSION_EQUAL 2022)
     # check to see if we have a mayapy2 executable
     find_program(MAYA_PY_EXECUTABLE2
             mayapy2

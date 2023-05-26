@@ -83,7 +83,7 @@ endif()
 # modules and definitions
 #------------------------------------------------------------------------------
 include(cmake/utils.cmake)
-find_package(Maya 2018 REQUIRED)
+find_package(Maya 2022 REQUIRED)
 
 if(APPLE AND BUILD_UB2 AND NOT MAYA_MACOSX_BUILT_WITH_UB2)
     message(WARNING  "Maya was NOT built with Universal Binary 2")
@@ -127,13 +127,6 @@ if (CMAKE_WANT_MATERIALX_BUILD)
 endif()
 include(cmake/usd.cmake)
 
-if(${MAYA_APP_VERSION} STRLESS "2019" AND CMAKE_WANT_UFE_BUILD)
-    set(CMAKE_WANT_UFE_BUILD OFF)
-    message(AUTHOR_WARNING "========================================================================================= \
-                            UFE is not available in Maya${MAYA_MAJOR_VERSION}. Maya2019 and later are supported only. \
-                            ========================================================================================= ")
-endif()
-
 if(CMAKE_WANT_UFE_BUILD)
     find_package(UFE QUIET)
     if(UFE_FOUND)
@@ -158,11 +151,9 @@ endif()
 
 if(DEFINED QT_LOCATION)
     if(NOT DEFINED QT_VERSION)
-        if(${MAYA_APP_VERSION} STRLESS_EQUAL "2019")
-            set(QT_VERSION "5.6")
-        else()
-            set(QT_VERSION "5.12")
-        endif()
+        # Maya 2022, 2023, 2024
+        set(QT_VERSION "5.15")
+        message(STATUS "Setting Qt version to Qt ${QT_VERSION}")
     endif()
     set(CMAKE_PREFIX_PATH "${QT_LOCATION}")
     find_package(Qt5 ${QT_VERSION} COMPONENTS Core Gui Widgets REQUIRED)
