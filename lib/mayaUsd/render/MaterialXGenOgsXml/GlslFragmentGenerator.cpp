@@ -284,7 +284,8 @@ ShaderPtr GlslFragmentGenerator::generate(
     _tokenSubstitutions[ShaderGenerator::T_FILE_TRANSFORM_UV]
         = (context.getOptions().fileTextureVerticalFlip ? "mx_transform_uv_vflip.glsl"
                                                         : "mx_transform_uv.glsl");
-    _tokenSubstitutions[HW::T_REFRACTION_ENV] = MX_REFRACTION_SUBSTITUTION;
+    // T_REFRACTION_ENV got removed in MaterialX 1.38.7
+    //_tokenSubstitutions[HW::T_REFRACTION_ENV] = MX_REFRACTION_SUBSTITUTION;
 #endif
 
     // Add all functions for node implementations
